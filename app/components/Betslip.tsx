@@ -107,17 +107,43 @@ export default function Betslip({ bets, onRemoveBet, onUpdateAmount, onPlaceBets
 
                       <div className="flex items-center gap-2">
                         <input
-                          type="number"
+                          type="text"
+                          inputMode="decimal"
                           value={bet.amount === 0 ? '' : bet.amount}
                           onChange={(e) => {
                             const val = e.target.value;
-                            if (val === '' || val === '0') {
+                            // Only allow numbers and decimal point
+                            const filtered = val.replace(/[^0-9.]/g, '');
+                            // Prevent multiple decimal points
+                            const parts = filtered.split('.');
+                            const sanitized = parts.length > 2 
+                              ? parts[0] + '.' + parts.slice(1).join('')
+                              : filtered;
+                            
+                            if (sanitized === '' || sanitized === '.') {
                               onUpdateAmount(bet.id, 0);
                             } else {
-                              const numVal = parseFloat(val);
+                              const numVal = parseFloat(sanitized);
                               if (!isNaN(numVal) && numVal >= 0) {
                                 onUpdateAmount(bet.id, numVal);
                               }
+                            }
+                          }}
+                          onKeyDown={(e) => {
+                            // Allow: backspace, delete, tab, escape, enter, decimal point
+                            if ([46, 8, 9, 27, 13, 110, 190].indexOf(e.keyCode) !== -1 ||
+                              // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+                              (e.keyCode === 65 && e.ctrlKey === true) ||
+                              (e.keyCode === 67 && e.ctrlKey === true) ||
+                              (e.keyCode === 86 && e.ctrlKey === true) ||
+                              (e.keyCode === 88 && e.ctrlKey === true) ||
+                              // Allow: home, end, left, right
+                              (e.keyCode >= 35 && e.keyCode <= 39)) {
+                              return;
+                            }
+                            // Ensure that it is a number and stop the keypress
+                            if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105) && e.keyCode !== 190 && e.keyCode !== 110) {
+                              e.preventDefault();
                             }
                           }}
                           onBlur={(e) => {
@@ -125,8 +151,6 @@ export default function Betslip({ bets, onRemoveBet, onUpdateAmount, onPlaceBets
                               onUpdateAmount(bet.id, defaultAmount);
                             }
                           }}
-                          min="0"
-                          step="any"
                           className="flex-1 px-3 py-2 border border-slate-600 bg-slate-800 rounded-lg text-center font-medium text-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
                           placeholder="0.00"
                         />
