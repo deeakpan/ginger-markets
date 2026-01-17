@@ -208,8 +208,8 @@ export default function Home() {
       
       <DefaultBetModal isOpen={showDefaultModal} onSetDefault={handleSetDefault} />
 
-      <div className="w-full max-w-3xl mx-auto px-4 pt-24 md:pt-32">
-        <div className="space-y-6 pb-8">
+      <div className="w-full max-w-2xl mx-auto px-4 pt-16 md:pt-32">
+        <div className="space-y-4 pb-8">
           {mockPredictions.map((prediction) => (
             <PredictionCard
               key={prediction.id}
