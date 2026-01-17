@@ -186,6 +186,7 @@ export default function Home() {
           question: prediction.question,
           side,
           amount: defaultAmount,
+          image: prediction.image,
         };
         setBets([...bets, newBet]);
       }

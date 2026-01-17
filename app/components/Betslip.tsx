@@ -8,6 +8,7 @@ export interface Bet {
   question: string;
   side: 'yes' | 'no';
   amount: number;
+  image?: string;
 }
 
 interface BetslipProps {
@@ -71,8 +72,18 @@ export default function Betslip({ bets, onRemoveBet, onUpdateAmount, onPlaceBets
                       key={bet.id}
                       className="bg-slate-700 border border-slate-600 rounded-lg p-4 space-y-3"
                     >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
+                      <div className="flex items-start justify-between gap-3">
+                        {/* Tiny image */}
+                        {bet.image && (
+                          <div className="flex-shrink-0">
+                            <img
+                              src={bet.image}
+                              alt={bet.question}
+                              className="w-12 h-12 rounded-lg object-cover border border-slate-600"
+                            />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
                           <p className="font-medium text-sm text-blue-50 mb-1">{bet.question}</p>
                           <div className="flex items-center gap-2">
                             <span
@@ -88,7 +99,7 @@ export default function Betslip({ bets, onRemoveBet, onUpdateAmount, onPlaceBets
                         </div>
                         <button
                           onClick={() => onRemoveBet(bet.id)}
-                          className="ml-2 p-1 hover:bg-slate-600 rounded transition-colors"
+                          className="ml-2 p-1 hover:bg-slate-600 rounded transition-colors flex-shrink-0"
                         >
                           <X className="w-4 h-4 text-blue-200" />
                         </button>
@@ -97,11 +108,21 @@ export default function Betslip({ bets, onRemoveBet, onUpdateAmount, onPlaceBets
                       <div className="flex items-center gap-2">
                         <input
                           type="number"
-                          value={bet.amount}
+                          value={bet.amount === 0 ? '' : bet.amount}
                           onChange={(e) => {
-                            const val = parseFloat(e.target.value);
-                            if (!isNaN(val) && val >= 0) {
-                              onUpdateAmount(bet.id, val);
+                            const val = e.target.value;
+                            if (val === '' || val === '0') {
+                              onUpdateAmount(bet.id, 0);
+                            } else {
+                              const numVal = parseFloat(val);
+                              if (!isNaN(numVal) && numVal >= 0) {
+                                onUpdateAmount(bet.id, numVal);
+                              }
+                            }
+                          }}
+                          onBlur={(e) => {
+                            if (e.target.value === '' || parseFloat(e.target.value) === 0) {
+                              onUpdateAmount(bet.id, defaultAmount);
                             }
                           }}
                           min="0"

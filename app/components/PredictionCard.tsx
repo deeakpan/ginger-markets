@@ -80,7 +80,7 @@ export default function PredictionCard({
   return (
     <div
       {...handlers}
-      className="relative w-full bg-slate-800 border border-slate-700 rounded-xl shadow-lg overflow-hidden select-none transition-transform duration-200 ease-out"
+      className="relative w-full bg-slate-800 border border-slate-700 rounded-xl shadow-lg overflow-hidden select-none transition-transform duration-200 ease-out md:max-w-sm"
       style={{
         transform: `translateX(${swipeDelta}px) rotate(${rotation}deg)`,
         opacity: isExiting ? 0 : Math.max(0.3, opacity),
@@ -103,16 +103,16 @@ export default function PredictionCard({
         </div>
       )}
 
-      <div className="p-4 md:p-5">
+      <div className="p-3 md:p-4">
         {/* Header with image and probability */}
-        <div className="flex items-start gap-4 mb-4">
+        <div className="flex items-start gap-3 mb-3">
           {/* Small square image */}
           {image && (
             <div className="flex-shrink-0">
               <img
                 src={image}
                 alt={question}
-                className="w-16 h-16 md:w-20 md:h-20 rounded-lg object-cover border border-slate-600"
+                className="w-12 h-12 md:w-16 md:h-16 rounded-lg object-cover border border-slate-600"
               />
             </div>
           )}
@@ -143,15 +143,15 @@ export default function PredictionCard({
         </div>
 
         {/* Question and Description */}
-        <div className="space-y-2 mb-3">
-          <h2 className="text-lg md:text-xl font-semibold text-blue-50 leading-tight">{question}</h2>
+        <div className="space-y-1.5 mb-2">
+          <h2 className="text-base md:text-lg font-semibold text-blue-50 leading-tight">{question}</h2>
           {description && (
-            <p className="text-xs md:text-sm text-blue-200 leading-relaxed">{description}</p>
+            <p className="text-xs text-blue-200 leading-relaxed line-clamp-2">{description}</p>
           )}
         </div>
 
         {/* Stats */}
-        <div className="flex items-center gap-4 mb-4 text-xs md:text-sm">
+        <div className="flex items-center gap-3 mb-3 text-xs">
           <div className="flex items-center gap-2 text-blue-300">
             <TrendingUp className="w-4 h-4" />
             <span>{stakeVolume.toFixed(1)} SOL</span>
@@ -163,26 +163,26 @@ export default function PredictionCard({
         </div>
         
         {/* Desktop buttons - inside card */}
-        <div className="hidden md:flex justify-center gap-3 pt-3 border-t border-slate-700">
+        <div className="hidden md:flex justify-center gap-2 pt-2 border-t border-slate-700">
           <button
             onClick={() => handleSwipe('left')}
-            className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-colors flex items-center justify-center gap-2"
+            className="flex-1 px-3 py-1.5 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-colors flex items-center justify-center gap-1.5 text-sm"
           >
-            <X className="w-4 h-4" />
+            <X className="w-3.5 h-3.5" />
             No
           </button>
           <button
             onClick={() => handleSwipe('right')}
             disabled={!defaultAmount || defaultAmount <= 0}
-            className="flex-1 px-4 py-2 bg-emerald-500 text-white rounded-lg font-medium hover:bg-emerald-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 px-3 py-1.5 bg-emerald-500 text-white rounded-lg font-medium hover:bg-emerald-600 transition-colors flex items-center justify-center gap-1.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Check className="w-4 h-4" />
+            <Check className="w-3.5 h-3.5" />
             <span className="text-white">Yes</span>
           </button>
         </div>
 
         {/* Mobile hint */}
-        <div className="md:hidden text-center pt-3 border-t border-slate-700">
+        <div className="md:hidden text-center pt-2 border-t border-slate-700">
           <p className="text-xs text-blue-300">Swipe left for No, right for Yes</p>
         </div>
       </div>
