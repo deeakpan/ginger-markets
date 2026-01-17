@@ -130,21 +130,29 @@ export default function Betslip({ bets, onRemoveBet, onUpdateAmount, onPlaceBets
                             }
                           }}
                           onKeyDown={(e) => {
-                            // Allow: backspace, delete, tab, escape, enter, decimal point
-                            if ([46, 8, 9, 27, 13, 110, 190].indexOf(e.keyCode) !== -1 ||
+                            // Allow: backspace, delete, tab, escape, enter
+                            if ([8, 9, 27, 13, 46].includes(e.keyCode) ||
                               // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
-                              (e.keyCode === 65 && e.ctrlKey === true) ||
-                              (e.keyCode === 67 && e.ctrlKey === true) ||
-                              (e.keyCode === 86 && e.ctrlKey === true) ||
-                              (e.keyCode === 88 && e.ctrlKey === true) ||
-                              // Allow: home, end, left, right
-                              (e.keyCode >= 35 && e.keyCode <= 39)) {
+                              (e.ctrlKey && [65, 67, 86, 88].includes(e.keyCode)) ||
+                              // Allow: home, end, left, right, up, down
+                              (e.keyCode >= 35 && e.keyCode <= 40)) {
                               return;
                             }
-                            // Ensure that it is a number and stop the keypress
-                            if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105) && e.keyCode !== 190 && e.keyCode !== 110) {
-                              e.preventDefault();
+                            // Allow decimal point
+                            if (e.key === '.' || e.key === ',' || e.keyCode === 190 || e.keyCode === 110) {
+                              // Check if decimal point already exists
+                              const currentValue = e.currentTarget.value;
+                              if (currentValue.includes('.')) {
+                                e.preventDefault();
+                              }
+                              return;
                             }
+                            // Allow numbers (0-9) from both main keyboard and numpad
+                            if ((e.keyCode >= 48 && e.keyCode <= 57) || (e.keyCode >= 96 && e.keyCode <= 105)) {
+                              return;
+                            }
+                            // Block everything else
+                            e.preventDefault();
                           }}
                           onBlur={(e) => {
                             if (e.target.value === '' || parseFloat(e.target.value) === 0) {
