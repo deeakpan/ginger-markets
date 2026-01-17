@@ -212,8 +212,9 @@ export default function Home() {
       
       <DefaultBetModal isOpen={showDefaultModal} onSetDefault={handleSetDefault} />
 
-      <div className="w-full max-w-2xl mx-auto px-4 pt-16 md:pt-32">
-        <div className="space-y-4 pb-8">
+      <div className="w-full max-w-7xl mx-auto px-4 pt-16 md:pt-24">
+        {/* Mobile: Single column */}
+        <div className="md:hidden space-y-4 pb-8">
           {mockPredictions
             .filter((prediction) => !swipedIds.has(prediction.id))
             .map((prediction) => (
@@ -232,6 +233,32 @@ export default function Home() {
             ))}
           {mockPredictions.filter((p) => !swipedIds.has(p.id)).length === 0 && (
             <div className="text-center py-12">
+              <p className="text-xl font-semibold text-blue-50 mb-2">No more markets!</p>
+              <p className="text-blue-300">Check back later for new predictions.</p>
+            </div>
+          )}
+        </div>
+
+        {/* Desktop: 3 column grid */}
+        <div className="hidden md:grid md:grid-cols-3 gap-4 pb-8">
+          {mockPredictions
+            .filter((prediction) => !swipedIds.has(prediction.id))
+            .map((prediction) => (
+              <PredictionCard
+                key={prediction.id}
+                id={prediction.id}
+                question={prediction.question}
+                description={prediction.description}
+                image={prediction.image}
+                yesProbability={prediction.yesProbability}
+                stakeVolume={prediction.stakeVolume}
+                resolveDate={prediction.resolveDate}
+                onSwipe={handleBet}
+                defaultAmount={defaultAmount}
+              />
+            ))}
+          {mockPredictions.filter((p) => !swipedIds.has(p.id)).length === 0 && (
+            <div className="col-span-3 text-center py-12">
               <p className="text-xl font-semibold text-blue-50 mb-2">No more markets!</p>
               <p className="text-blue-300">Check back later for new predictions.</p>
             </div>
