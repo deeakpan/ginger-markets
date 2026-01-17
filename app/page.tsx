@@ -87,6 +87,7 @@ const mockPredictions = [
 const BETSLIP_STORAGE_KEY = 'gingermarket_betslip';
 const FIRST_LOGIN_KEY = 'gingermarket_first_login';
 const DEFAULT_AMOUNT_KEY = 'gingermarket_default_amount';
+const SWIPED_IDS_KEY = 'gingermarket_swiped_ids';
 
 export default function Home() {
   const { publicKey, connected } = useWallet();
@@ -96,7 +97,7 @@ export default function Home() {
   const [showDefaultModal, setShowDefaultModal] = useState(false);
   const [swipedIds, setSwipedIds] = useState<Set<string>>(new Set());
 
-  // Load betslip from localStorage
+  // Load betslip and swipedIds from localStorage
   useEffect(() => {
     const savedBetslip = localStorage.getItem(BETSLIP_STORAGE_KEY);
     if (savedBetslip) {
@@ -105,6 +106,16 @@ export default function Home() {
         setBets(parsedBets);
       } catch (e) {
         console.error('Error loading betslip:', e);
+      }
+    }
+
+    const savedSwipedIds = localStorage.getItem(SWIPED_IDS_KEY);
+    if (savedSwipedIds) {
+      try {
+        const parsedIds = JSON.parse(savedSwipedIds) as string[];
+        setSwipedIds(new Set(parsedIds));
+      } catch (e) {
+        console.error('Error loading swipedIds:', e);
       }
     }
   }, []);
@@ -117,6 +128,15 @@ export default function Home() {
       localStorage.removeItem(BETSLIP_STORAGE_KEY);
     }
   }, [bets]);
+
+  // Save swipedIds to localStorage whenever it changes
+  useEffect(() => {
+    if (swipedIds.size > 0) {
+      localStorage.setItem(SWIPED_IDS_KEY, JSON.stringify(Array.from(swipedIds)));
+    } else {
+      localStorage.removeItem(SWIPED_IDS_KEY);
+    }
+  }, [swipedIds]);
 
   // Check first login and default amount
   useEffect(() => {
@@ -145,8 +165,9 @@ export default function Home() {
     // Mark as swiped - remove from view
     setSwipedIds(prev => new Set(prev).add(id));
 
-    // Only add to betslip if swiping right (yes) and default amount is set
-    if (direction === 'right' && defaultAmount !== null && defaultAmount > 0) {
+    // Add to betslip for both Yes and No if default amount is set
+    if (defaultAmount !== null && defaultAmount > 0) {
+      const side = direction === 'right' ? 'yes' : 'no';
       const existingBetIndex = bets.findIndex((b) => b.id === id);
       
       if (existingBetIndex >= 0) {
@@ -154,7 +175,7 @@ export default function Home() {
         const updatedBets = [...bets];
         updatedBets[existingBetIndex] = {
           ...updatedBets[existingBetIndex],
-          side: 'yes',
+          side,
           amount: defaultAmount,
         };
         setBets(updatedBets);
@@ -163,20 +184,25 @@ export default function Home() {
         const newBet: Bet = {
           id,
           question: prediction.question,
-          side: 'yes',
+          side,
           amount: defaultAmount,
         };
         setBets([...bets, newBet]);
       }
-    } else if (direction === 'left') {
-      // Remove bet if swiping left (no)
-      setBets(bets.filter((b) => b.id !== id));
     }
   };
 
   const handleRemoveBet = (id: string) => {
     const updatedBets = bets.filter((b) => b.id !== id);
     setBets(updatedBets);
+    
+    // Remove from swipedIds so card reappears in markets
+    setSwipedIds(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(id);
+      return newSet;
+    });
+    
     if (updatedBets.length === 0) {
       localStorage.removeItem(BETSLIP_STORAGE_KEY);
     }

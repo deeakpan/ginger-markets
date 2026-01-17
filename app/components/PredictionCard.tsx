@@ -48,22 +48,30 @@ export default function PredictionCard({
     onSwiping: (e) => {
       setSwipeDelta(e.deltaX);
     },
-    onSwipedLeft: () => {
-      handleSwipe('left');
+    onSwipedLeft: (e) => {
+      if (Math.abs(e.deltaX) >= 50) {
+        handleSwipe('left');
+      } else {
+        setSwipeDelta(0);
+      }
     },
-    onSwipedRight: () => {
-      handleSwipe('right');
+    onSwipedRight: (e) => {
+      if (Math.abs(e.deltaX) >= 50) {
+        handleSwipe('right');
+      } else {
+        setSwipeDelta(0);
+      }
     },
     onTouchEndOrOnMouseUp: () => {
       // Reset if not swiped enough
-      if (Math.abs(swipeDelta) < 100) {
+      if (Math.abs(swipeDelta) < 50) {
         setSwipeDelta(0);
       }
     },
     trackMouse: false,
     trackTouch: true,
     preventScrollOnSwipe: false,
-    delta: 50,
+    delta: 30,
   });
 
   const rotation = swipeDelta * 0.1;
