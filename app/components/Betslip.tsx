@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Wallet } from 'lucide-react';
 
 export interface Bet {
@@ -21,8 +21,22 @@ interface BetslipProps {
 
 export default function Betslip({ bets, onRemoveBet, onUpdateAmount, onPlaceBets, defaultAmount }: BetslipProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [inputValues, setInputValues] = useState<Record<string, string>>({});
 
   const totalAmount = bets.reduce((sum, bet) => sum + bet.amount, 0);
+
+  // Sync input values with bet amounts
+  useEffect(() => {
+    const newValues: Record<string, string> = {};
+    bets.forEach(bet => {
+      if (!(bet.id in inputValues)) {
+        newValues[bet.id] = bet.amount === 0 ? '' : String(bet.amount);
+      } else {
+        newValues[bet.id] = inputValues[bet.id];
+      }
+    });
+    setInputValues(newValues);
+  }, [bets.length]);
 
   // Floating button for all screen sizes
   return (
@@ -109,54 +123,39 @@ export default function Betslip({ bets, onRemoveBet, onUpdateAmount, onPlaceBets
                         <input
                           type="text"
                           inputMode="decimal"
-                          value={bet.amount === 0 ? '' : bet.amount}
+                          value={inputValues[bet.id] ?? (bet.amount === 0 ? '' : String(bet.amount))}
                           onChange={(e) => {
-                            const val = e.target.value;
-                            // Only allow numbers and decimal point
-                            const filtered = val.replace(/[^0-9.]/g, '');
-                            // Prevent multiple decimal points
-                            const parts = filtered.split('.');
-                            const sanitized = parts.length > 2 
-                              ? parts[0] + '.' + parts.slice(1).join('')
-                              : filtered;
+                            let val = e.target.value;
                             
-                            if (sanitized === '' || sanitized === '.') {
+                            // Only allow numbers and decimal point
+                            val = val.replace(/[^0-9.]/g, '');
+                            
+                            // Prevent multiple decimal points
+                            const parts = val.split('.');
+                            if (parts.length > 2) {
+                              val = parts[0] + '.' + parts.slice(1).join('');
+                            }
+                            
+                            // Update local state immediately for display
+                            setInputValues(prev => ({ ...prev, [bet.id]: val }));
+                            
+                            // Parse and update amount (allow empty or just decimal for typing)
+                            if (val === '' || val === '.') {
                               onUpdateAmount(bet.id, 0);
                             } else {
-                              const numVal = parseFloat(sanitized);
+                              const numVal = parseFloat(val);
                               if (!isNaN(numVal) && numVal >= 0) {
                                 onUpdateAmount(bet.id, numVal);
                               }
                             }
                           }}
-                          onKeyDown={(e) => {
-                            // Allow: backspace, delete, tab, escape, enter
-                            if ([8, 9, 27, 13, 46].includes(e.keyCode) ||
-                              // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
-                              (e.ctrlKey && [65, 67, 86, 88].includes(e.keyCode)) ||
-                              // Allow: home, end, left, right, up, down
-                              (e.keyCode >= 35 && e.keyCode <= 40)) {
-                              return;
-                            }
-                            // Allow decimal point
-                            if (e.key === '.' || e.key === ',' || e.keyCode === 190 || e.keyCode === 110) {
-                              // Check if decimal point already exists
-                              const currentValue = e.currentTarget.value;
-                              if (currentValue.includes('.')) {
-                                e.preventDefault();
-                              }
-                              return;
-                            }
-                            // Allow numbers (0-9) from both main keyboard and numpad
-                            if ((e.keyCode >= 48 && e.keyCode <= 57) || (e.keyCode >= 96 && e.keyCode <= 105)) {
-                              return;
-                            }
-                            // Block everything else
-                            e.preventDefault();
-                          }}
                           onBlur={(e) => {
-                            if (e.target.value === '' || parseFloat(e.target.value) === 0) {
+                            const val = e.target.value;
+                            if (val === '' || val === '.' || parseFloat(val || '0') === 0) {
                               onUpdateAmount(bet.id, defaultAmount);
+                              setInputValues(prev => ({ ...prev, [bet.id]: String(defaultAmount) }));
+                            } else {
+                              setInputValues(prev => ({ ...prev, [bet.id]: val }));
                             }
                           }}
                           className="flex-1 px-3 py-2 border border-slate-600 bg-slate-800 rounded-lg text-center font-medium text-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
