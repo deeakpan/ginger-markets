@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { X, Check, Calendar, TrendingUp } from 'lucide-react';
 import { useSwipeable } from 'react-swipeable';
 
@@ -26,14 +27,8 @@ export default function PredictionCard({
   onSwipe, 
   defaultAmount 
 }: PredictionCardProps) {
-  const handlers = useSwipeable({
-    onSwipedLeft: () => onSwipe('left', id),
-    onSwipedRight: () => onSwipe('right', id),
-    trackMouse: false,
-    trackTouch: true,
-    preventScrollOnSwipe: false,
-    delta: 50,
-  });
+  const [swipeDelta, setSwipeDelta] = useState(0);
+  const [isExiting, setIsExiting] = useState(false);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -42,11 +37,64 @@ export default function PredictionCard({
 
   const noProbability = 100 - yesProbability;
 
+  const handleSwipe = (direction: 'left' | 'right') => {
+    setIsExiting(true);
+    setTimeout(() => {
+      onSwipe(direction, id);
+    }, 300);
+  };
+
+  const handlers = useSwipeable({
+    onSwiping: (e) => {
+      setSwipeDelta(e.deltaX);
+    },
+    onSwipedLeft: () => {
+      handleSwipe('left');
+    },
+    onSwipedRight: () => {
+      handleSwipe('right');
+    },
+    onTouchEndOrOnMouseUp: () => {
+      // Reset if not swiped enough
+      if (Math.abs(swipeDelta) < 100) {
+        setSwipeDelta(0);
+      }
+    },
+    trackMouse: false,
+    trackTouch: true,
+    preventScrollOnSwipe: false,
+    delta: 50,
+  });
+
+  const rotation = swipeDelta * 0.1;
+  const opacity = 1 - Math.abs(swipeDelta) / 500;
+
   return (
     <div
       {...handlers}
-      className="relative w-full bg-slate-800 border border-slate-700 rounded-xl shadow-lg overflow-hidden select-none"
+      className="relative w-full bg-slate-800 border border-slate-700 rounded-xl shadow-lg overflow-hidden select-none transition-transform duration-200 ease-out"
+      style={{
+        transform: `translateX(${swipeDelta}px) rotate(${rotation}deg)`,
+        opacity: isExiting ? 0 : Math.max(0.3, opacity),
+        zIndex: isExiting ? 0 : 1,
+      }}
     >
+      {/* Swipe indicators */}
+      {swipeDelta > 50 && (
+        <div className="absolute inset-0 bg-emerald-500/20 flex items-center justify-center z-10 pointer-events-none">
+          <div className="bg-emerald-500 text-white px-6 py-3 rounded-lg font-bold text-xl">
+            YES
+          </div>
+        </div>
+      )}
+      {swipeDelta < -50 && (
+        <div className="absolute inset-0 bg-red-500/20 flex items-center justify-center z-10 pointer-events-none">
+          <div className="bg-red-500 text-white px-6 py-3 rounded-lg font-bold text-xl">
+            NO
+          </div>
+        </div>
+      )}
+
       <div className="p-4 md:p-5">
         {/* Header with image and probability */}
         <div className="flex items-start gap-4 mb-4">
@@ -109,14 +157,14 @@ export default function PredictionCard({
         {/* Desktop buttons - inside card */}
         <div className="hidden md:flex justify-center gap-3 pt-3 border-t border-slate-700">
           <button
-            onClick={() => onSwipe('left', id)}
+            onClick={() => handleSwipe('left')}
             className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-colors flex items-center justify-center gap-2"
           >
             <X className="w-4 h-4" />
             No
           </button>
           <button
-            onClick={() => onSwipe('right', id)}
+            onClick={() => handleSwipe('right')}
             disabled={!defaultAmount || defaultAmount <= 0}
             className="flex-1 px-4 py-2 bg-emerald-500 text-white rounded-lg font-medium hover:bg-emerald-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >

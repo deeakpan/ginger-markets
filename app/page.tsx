@@ -94,6 +94,7 @@ export default function Home() {
   const [bets, setBets] = useState<Bet[]>([]);
   const [defaultAmount, setDefaultAmount] = useState<number | null>(null);
   const [showDefaultModal, setShowDefaultModal] = useState(false);
+  const [swipedIds, setSwipedIds] = useState<Set<string>>(new Set());
 
   // Load betslip from localStorage
   useEffect(() => {
@@ -140,6 +141,9 @@ export default function Home() {
   const handleBet = (direction: 'left' | 'right', id: string) => {
     const prediction = mockPredictions.find((p) => p.id === id);
     if (!prediction) return;
+
+    // Mark as swiped - remove from view
+    setSwipedIds(prev => new Set(prev).add(id));
 
     // Only add to betslip if swiping right (yes) and default amount is set
     if (direction === 'right' && defaultAmount !== null && defaultAmount > 0) {
@@ -210,20 +214,28 @@ export default function Home() {
 
       <div className="w-full max-w-2xl mx-auto px-4 pt-16 md:pt-32">
         <div className="space-y-4 pb-8">
-          {mockPredictions.map((prediction) => (
-            <PredictionCard
-              key={prediction.id}
-              id={prediction.id}
-              question={prediction.question}
-              description={prediction.description}
-              image={prediction.image}
-              yesProbability={prediction.yesProbability}
-              stakeVolume={prediction.stakeVolume}
-              resolveDate={prediction.resolveDate}
-              onSwipe={handleBet}
-              defaultAmount={defaultAmount}
-            />
-          ))}
+          {mockPredictions
+            .filter((prediction) => !swipedIds.has(prediction.id))
+            .map((prediction) => (
+              <PredictionCard
+                key={prediction.id}
+                id={prediction.id}
+                question={prediction.question}
+                description={prediction.description}
+                image={prediction.image}
+                yesProbability={prediction.yesProbability}
+                stakeVolume={prediction.stakeVolume}
+                resolveDate={prediction.resolveDate}
+                onSwipe={handleBet}
+                defaultAmount={defaultAmount}
+              />
+            ))}
+          {mockPredictions.filter((p) => !swipedIds.has(p.id)).length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-xl font-semibold text-blue-50 mb-2">No more markets!</p>
+              <p className="text-blue-300">Check back later for new predictions.</p>
+            </div>
+          )}
         </div>
       </div>
 
