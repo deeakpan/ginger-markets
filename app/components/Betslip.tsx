@@ -41,7 +41,7 @@ export default function Betslip({ bets, onRemoveBet, onUpdateAmount, onPlaceBets
 
       {/* Modal */}
       {isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-end md:items-center justify-center z-50 p-0 md:p-4" onClick={() => setIsOpen(false)}>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-end md:items-center justify-center z-50 p-0 md:p-4" onClick={() => setIsOpen(false)}>
           <div 
             className="w-full md:w-full md:max-w-2xl bg-slate-800 rounded-t-2xl md:rounded-2xl shadow-xl max-h-[90vh] md:max-h-[80vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}

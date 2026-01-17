@@ -22,7 +22,7 @@ export default function DefaultBetModal({ isOpen, onSetDefault }: DefaultBetModa
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-slate-800 border border-slate-700 rounded-xl shadow-xl p-6 max-w-sm w-full">
         <div className="space-y-4">
           <div className="flex items-center gap-3 mb-4">
